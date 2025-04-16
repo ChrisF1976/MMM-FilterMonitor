@@ -50,9 +50,9 @@ Add to your `config.js`:
     }
 }
 ```
-
-See [MMM-ShellyPV](https://github.com/ChrisF1976/MMM-ShellyPV) for Shelly config instructions.
-
+- See [MMM-ShellyPV](https://github.com/ChrisF1976/MMM-ShellyPV) for Shelly config instructions.
+- Adjust the thresholds as you need it.
+- see CSS to adjust width, font-size and so on...
 
 ## Requirements
 - [MagicMirror²](https://magicmirror.builders) (v2.15.0 or newer)

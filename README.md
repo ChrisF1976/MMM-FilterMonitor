@@ -15,6 +15,7 @@ A MagicMirror² module that monitors filter status via Shelly device power consu
 1. Navigate to your MagicMirror `modules` directory
 2. Clone this repository:
    ```bash
+   cd ~/MagicMirror/modules
    git clone https://github.com/ChrisF1976/MMM-FilterMonitor.git
    ```
 

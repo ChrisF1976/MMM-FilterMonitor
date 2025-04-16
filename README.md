@@ -32,23 +32,23 @@ Add to your `config.js`:
             id: "YOUR_SHELLY_ID",
             serverUri: "https://shelly-55-eu.shelly.cloud",
             authKey: "YOUR_API_KEY",
-            channel: 0  // Only for multi-channel devices
+            channel: 0,  // Only for multi-channel devices
         },
         thresholds: {
-            ok: 50,        // Below this: Filter OK (green)
-            warning: 100,  // Between ok-warning: Warning (yellow)
-            critical: 150  // Above warning: Critical (red)
+            ok: 40,        // Below this: Filter OK (green)
+            warning: 45,  // Between ok-warning: Warning (yellow)
+            critical: 55,  // Above warning: Critical (red)
         },
         messages: {
             ok: "Filter OK",
             warning: "Check filter soon!",
-            critical: "REPLACE FILTER!"
+            critical: "REPLACE FILTER!",
         },
         updateInterval: 30*1000,  // Refresh rate in ms - here: 30s
         showPower: true,       // Show current power value
-        showIndicator: true    // Show status bar
-    }
-}
+        showIndicator: true,    // Show status bar
+    },
+},
 ```
 - See [MMM-ShellyPV](https://github.com/ChrisF1976/MMM-ShellyPV) for Shelly config instructions.
 - Adjust the thresholds as you need it.

@@ -1,6 +1,6 @@
 # MMM-FilterMonitor
 
-A MagicMirror² module that monitors filter status via Shelly device power consumption, providing visual alerts when filter maintenance is needed.
+A MagicMirror² module that monitors ventilation system filters via Shelly power consumption, providing visual alerts when filter maintenance is needed.
 
 ![Screenshot](./MMM-FilterMonitor.png)
 

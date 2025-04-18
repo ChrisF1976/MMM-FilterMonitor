@@ -1,0 +1,29 @@
+{
+  "name": "MMM-FilterMonitor",
+  "version": "1.0.0",
+  "description": "MagicMirror² module to monitor ventilation system filters via Shelly power consumption",
+  "main": "MMM-FilterMonitor.js",
+  "keywords": [
+    "ventilation",
+    "filter",
+    "shelly",
+    "vaillant"
+  ],
+  "author": "ChrisF1976",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChrisF1976/MMM-FilterMonitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChrisF1976/MMM-FilterMonitor/issues"
+  },
+  "homepage": "https://github.com/ChrisF1976/MMM-FilterMonitor#readme",
+  "engines": {
+    "node": ">=16",
+    "npm": ">=7"
+  }
+}

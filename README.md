@@ -17,6 +17,14 @@ A MagicMirror² module that monitors ventilation system filters via Shelly power
    ```bash
    cd ~/MagicMirror/modules
    git clone https://github.com/ChrisF1976/MMM-FilterMonitor.git
+   cd MMM-FilterMonitor
+   npm install
+   ```
+### Update
+```bash
+   cd ~/MagicMirror/modules/MMM-FilterMonitor
+   git pull
+   npm install
    ```
 
 

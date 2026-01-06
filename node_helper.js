@@ -1,13 +1,12 @@
 const NodeHelper = require("node_helper");
-const axios = require("axios");
 
 module.exports = NodeHelper.create({
-    start: function() {
+    start: function () {
         this.config = null;
         this.isFetching = false; // Lock für parallele Abfragen
     },
 
-    socketNotificationReceived: function(notification, payload) {
+    socketNotificationReceived: function (notification, payload) {
         if (notification === "CONFIG") {
             this.config = payload;
         } else if (notification === "GET_STATUS") {
@@ -15,9 +14,9 @@ module.exports = NodeHelper.create({
         }
     },
 
-    fetchStatus: async function() {
+    fetchStatus: async function () {
         if (!this.config?.shellyDevice) return;
-        
+
         // Verhindere parallele Ausführungen
         if (this.isFetching) {
             console.log("FilterMonitor: Fetch already in progress, skipping...");
@@ -29,45 +28,93 @@ module.exports = NodeHelper.create({
         try {
             let retryCount = 0;
             const maxRetries = 1;
-            
+
             while (retryCount <= maxRetries) {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000);
+
                 try {
-                    console.log(`FilterMonitor: Fetching status for ${this.config.shellyDevice.name || this.config.shellyDevice.id}...`);
-                    
-                    const response = await axios.post(
+                    console.log(
+                        `FilterMonitor: Fetching status for ${
+                            this.config.shellyDevice.name ||
+                            this.config.shellyDevice.id
+                        }...`
+                    );
+
+                    const body = new URLSearchParams({
+                        id: this.config.shellyDevice.id,
+                        auth_key: this.config.shellyDevice.authKey
+                    }).toString();
+
+                    const response = await fetch(
                         `${this.config.shellyDevice.serverUri}/device/status`,
-                        `id=${this.config.shellyDevice.id}&auth_key=${this.config.shellyDevice.authKey}`,
-                        { 
-                            timeout: 10000, // Erhöht auf 10 Sekunden
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded"
+                            },
+                            body,
+                            signal: controller.signal
                         }
                     );
 
-                    const power = this.parsePower(response.data);
-                    console.log(`FilterMonitor: ✓ Successfully fetched ${this.config.shellyDevice.name || this.config.shellyDevice.id}: ${power !== null ? power + 'W' : 'No power data'}`);
-                    
-                    this.sendUpdate(power);
-                    break; // Erfolg - Schleife verlassen
-                    
-                } catch (error) {
-                    if (error.response?.status === 429 && retryCount < maxRetries) {
-                        console.error(`FilterMonitor: ✗ Rate limit hit (Retry ${retryCount + 1}/${maxRetries})`);
-                        
-                        console.log("FilterMonitor: Waiting 11 seconds before retry...");
-                        await new Promise(resolve => setTimeout(resolve, 11000));
-                        retryCount++;
-                        continue; // Nochmal versuchen
-                    } else {
-                        // Endgültiger Fehler
-                        if (error.response?.status === 429) {
-                            console.error("FilterMonitor: ✗ Rate limit hit - no more retries");
-                        } else {
-                            console.error("FilterMonitor: ✗ Fetch error:", error.message);
+                    clearTimeout(timeout);
+
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            throw { rateLimit: true };
                         }
-                        
-                        this.sendUpdate(null);
-                        break;
+                        throw new Error(`HTTP error ${response.status}`);
                     }
+
+                    const json = await response.json();
+                    const power = this.parsePower(json);
+
+                    console.log(
+                        `FilterMonitor: ✓ Successfully fetched ${
+                            this.config.shellyDevice.name ||
+                            this.config.shellyDevice.id
+                        }: ${
+                            power !== null ? power + "W" : "No power data"
+                        }`
+                    );
+
+                    this.sendUpdate(power);
+                    break; // Erfolg
+
+                } catch (error) {
+                    clearTimeout(timeout);
+
+                    if (error.rateLimit && retryCount < maxRetries) {
+                        console.error(
+                            `FilterMonitor: ✗ Rate limit hit (Retry ${retryCount + 1}/${maxRetries})`
+                        );
+                        console.log(
+                            "FilterMonitor: Waiting 11 seconds before retry..."
+                        );
+                        await new Promise(r => setTimeout(r, 11000));
+                        retryCount++;
+                        continue;
+                    }
+
+                    if (error.rateLimit) {
+                        console.error(
+                            "FilterMonitor: ✗ Rate limit hit - no more retries"
+                        );
+                    } else if (error.name === "AbortError") {
+                        console.error(
+                            "FilterMonitor: ✗ Request timed out"
+                        );
+                    } else {
+                        console.error(
+                            "FilterMonitor: ✗ Fetch error:",
+                            error.message || error
+                        );
+                    }
+
+                    this.sendUpdate(null);
+                    break;
                 }
             }
 
@@ -79,7 +126,7 @@ module.exports = NodeHelper.create({
         }
     },
 
-    parsePower: function(data) {
+    parsePower: function (data) {
         const status = data?.data?.device_status;
         if (!status) return null;
 
@@ -95,10 +142,10 @@ module.exports = NodeHelper.create({
         return null;
     },
 
-    sendUpdate: function(power) {
+    sendUpdate: function (power) {
         this.sendSocketNotification("STATUS_UPDATE", {
             power: power,
-            status: power !== null ? 'on' : 'off'
+            status: power !== null ? "on" : "off"
         });
     }
 });
